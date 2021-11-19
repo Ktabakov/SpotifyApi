@@ -1,0 +1,19 @@
+{
+  "name": "SpotifyApi",
+  "version": "1.0.0",
+  "description": "",
+  "main": "Index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^0.24.0",
+    "excel4node": "^1.7.2",
+    "fs": "0.0.1-security",
+    "spotify-web-api-node": "^5.0.2",
+    "xlsx": "^0.17.4"
+  }
+}
