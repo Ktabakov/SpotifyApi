@@ -35,7 +35,7 @@ const firstSheet = spreadsheet.Sheets[sheets[0]]; //sheet 1 is index 0
         redirectUri: 'http://www.example.com/callback'
     });
 
-    spotifyApi.setAccessToken('*************************************');
+    spotifyApi.setAccessToken('*******************************************************************');
 
     for (let index = 0; index < artists.length; index++) {
 
@@ -52,15 +52,17 @@ const firstSheet = spreadsheet.Sheets[sheets[0]]; //sheet 1 is index 0
 
             try {
                 let result = await spotifyApi.getAlbum(id)
-                let label = result.body.copyrights[0].text
+                let copyrights = result.body.copyrights.map(x => x.text + " -Type: " + x.type + "; ")
+                let label = result.body.label
                 let href = result.body.external_urls.spotify
                 let releaseDate = result.body.release_date
                 let album = result.body.name
                 let item = {
-                    label,
+                    copyrights,
                     album,
                     href,
-                    releaseDate
+                    releaseDate,
+                    label
                 }
                 return item
             } catch (error) {
@@ -77,6 +79,7 @@ const firstSheet = spreadsheet.Sheets[sheets[0]]; //sheet 1 is index 0
     const outputFields = [
         "Artist",
         "Track",
+        "Copyrights - C is Copyright; P is Performance Copyright",
         "Label",
         "Album",
         "Href",
@@ -91,10 +94,11 @@ const firstSheet = spreadsheet.Sheets[sheets[0]]; //sheet 1 is index 0
         if (item.label) {
             worksheet.cell(index + 2, 1).string(artists[index])
             worksheet.cell(index + 2, 2).string(tracks[index])
-            worksheet.cell(index + 2, 3).string(item.label)
-            worksheet.cell(index + 2, 4).string(item.album)
-            worksheet.cell(index + 2, 5).string(item.href)
-            worksheet.cell(index + 2, 6).string(item.releaseDate)
+            worksheet.cell(index + 2, 3).string(item.copyrights)
+            worksheet.cell(index + 2, 4).string(item.label)
+            worksheet.cell(index + 2, 5).string(item.album)
+            worksheet.cell(index + 2, 6).string(item.href)
+            worksheet.cell(index + 2, 7).string(item.releaseDate)
         } else {
             worksheet.cell(index + 2, 1).string(artists[index])
             worksheet.cell(index + 2, 2).string(tracks[index])
@@ -102,7 +106,8 @@ const firstSheet = spreadsheet.Sheets[sheets[0]]; //sheet 1 is index 0
             worksheet.cell(index + 2, 4).string("error")
             worksheet.cell(index + 2, 5).string("error")
             worksheet.cell(index + 2, 6).string("error")
-            
+            worksheet.cell(index + 2, 7).string("error")
+
         }
     }
 
