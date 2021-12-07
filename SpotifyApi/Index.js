@@ -4,6 +4,8 @@ var workbook = new excel.Workbook();
 var worksheet = workbook.addWorksheet('Sheet 1');
 const fs = require('fs');
 const xlsx = require("xlsx");
+const { default: axios } = require('axios');
+const { Console } = require('console');
 const spreadsheet = xlsx.readFile('./Artists.xlsx');
 const sheets = spreadsheet.SheetNames;
 const firstSheet = spreadsheet.Sheets[sheets[0]]; //sheet 1 is index 0
@@ -30,20 +32,30 @@ const firstSheet = spreadsheet.Sheets[sheets[0]]; //sheet 1 is index 0
     }
 
     var spotifyApi = new SpotifyWebApi({
-        clientId: '*************************************',
-        clientSecret: '*************************************',
+        clientId: '***********************',
+        clientSecret: '**********************',
         redirectUri: 'http://www.example.com/callback'
     });
-
-    spotifyApi.setAccessToken('*******************************************************************');
-
+    
+    try {
+        let data = await spotifyApi.clientCredentialsGrant()
+        spotifyApi.setAccessToken(data.body['access_token']);
+    } catch (error) {
+        console.log('Something went wrong when retrieving an access token', err);
+    }
+    
     for (let index = 0; index < artists.length; index++) {
 
+        let albums;
         let getTheLabel = async () => {
             let id;
             try {
                 let result = await spotifyApi.searchTracks(`track:${tracks[index]} artist:${artists[index]}`)
-                id = result.body.tracks.items[0].album.id;
+                albums = result.body.tracks.items;
+                albums.sort(function custom_sort(a, b) {
+                    return new Date(a.album.release_date).getTime() - new Date(b.album.release_date).getTime();
+                })
+                id = albums[0].album.id;
                 console.log(`Fetch ${index}`)
             } catch (error) {
                 console.log('Something went wrong!', error);
@@ -52,7 +64,7 @@ const firstSheet = spreadsheet.Sheets[sheets[0]]; //sheet 1 is index 0
 
             try {
                 let result = await spotifyApi.getAlbum(id)
-                let copyrights = result.body.copyrights.map(x => x.text + " -Type: " + x.type + "; ")
+                let copyrights = result.body.copyrights.map(x => "(" + x.type + ") " + x.text + "; ")
                 let label = result.body.label
                 let href = result.body.external_urls.spotify
                 let releaseDate = result.body.release_date
